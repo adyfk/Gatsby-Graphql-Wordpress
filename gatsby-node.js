@@ -31,6 +31,7 @@ exports.createPages = async ({ graphql, actions }) => {
             status
             template
             title
+            content
           }
         }
       }
@@ -43,6 +44,7 @@ exports.createPages = async ({ graphql, actions }) => {
             template
             format
             title
+            content
           }
         }
       }
