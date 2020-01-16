@@ -60,6 +60,9 @@ exports.createPages = async ({ graphql, actions }) => {
               source_url
             }
             content
+            acf{
+              portofolio_url
+            }
           }
         }
       }

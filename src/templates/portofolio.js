@@ -12,6 +12,9 @@ export default ({ pageContext }) => (
   <Layout>
     <h1 dangerouslySetInnerHTML={{ __html: pageContext.title }} />
     <FeaturedImage src={pageContext.featured_media.source_url} ></FeaturedImage>
+    <a href={pageContext.acf.portofolio_url}>
+      <div>Website URL</div>
+    </a>
     <div dangerouslySetInnerHTML={{ __html: pageContext.content }}></div>
   </Layout>
 )
