@@ -17,10 +17,7 @@ const slash = require(`slash`)
 exports.createPages = async ({ graphql, actions }) => {
   const { createPage, createRedirect } = actions
   createRedirect({ fromPath: '/', toPath: '/home', redirectInBrowser: true, isPermanent: true })
-  // The “graphql” function allows us to run arbitrary
-  // queries against the local Gatsby GraphQL schema. Think of
-  // it like the site has a built-in database constructed
-  // from the fetched data that you can run queries against.
+
   const result = await graphql(`
     {
       allWordpressPage {
@@ -66,6 +63,18 @@ exports.createPages = async ({ graphql, actions }) => {
           }
         }
       }
+      allWordpressPost {
+        edges {
+          node{
+            excerpt
+            wordpress_id
+            date(formatString:"Do MM YYYY HH:mm")
+            title
+            slug
+            content
+          }
+        }
+      }
     }
   `)
 
@@ -79,61 +88,71 @@ exports.createPages = async ({ graphql, actions }) => {
   const portofolioUnderContentTemplate = path.resolve(`./src/templates/portofolioUnderContent.js`)
   // Create Page pages.
   const pageTemplate = path.resolve(`./src/templates/page.js`)
-  // We want to create a detailed page for each page node.
-  // The path field contains the relative original WordPress link
-  // and we use it for the slug to preserve url structure.
-  // The Page ID is prefixed with 'PAGE_'
+
   allWordpressPage.edges.forEach(edge => {
-    // Gatsby uses Redux to manage its internal state.
-    // Plugins and sites can use functions like "createPage"
-    // to interact with Gatsby.
+    const { path, ...context } = edge.node
     createPage({
-      // Each page is required to have a `path` as well
-      // as a template component. The `context` is
-      // optional but is often necessary so the template
-      // can query data specific to each page.
-      path: edge.node.path,
+      path,
       component: slash(
         edge.node.template === 'portofolio_under_content.php' ?
           portofolioUnderContentTemplate :
           pageTemplate
       ),
-      context: {
-        ...edge.node,
-      },
+      context
     })
   })
 
-  const postTemplate = path.resolve(`./src/templates/post.js`)
-  // We want to create a detailed page for each post node.
-  // The path field stems from the original WordPress link
-  // and we use it for the slug to preserve url structure.
-  // The Post ID is prefixed with 'POST_'
-  allWordpressPost.edges.forEach(edge => {
+  // const postTemplate = path.resolve(`./src/templates/post.js`)
+
+  // allWordpressPost.edges.forEach(edge => {
+  //   const { path, ...context } = edge.node
+  //   createPage({
+  //     path: `/post${path}`,
+  //     component: slash(
+  //       edge.node.template === 'portofolio_under_content.php' ?
+  //         portofolioUnderContentTemplate :
+  //         postTemplate
+  //     ),
+  //     context
+  //   })
+  // })
+  const portofolioTemplate = path.resolve(`./src/templates/portofolio.js`)
+
+  allWordpressWpPortofolio.edges.forEach(edge => {
+    const { path, ...context } = edge.node;
     createPage({
-      path: edge.node.path,
-      component: slash(
-        edge.node.template === 'portofolio_under_content.php' ?
-          portofolioUnderContentTemplate :
-          pageTemplate
-      ),
-      context: {
-        ...edge.node,
-      },
+      path,
+      component: slash(portofolioTemplate),
+      context
     })
   })
-  const portofolioTemplate = path.resolve(`./src/templates/portofolio.js`)
-  // We want to create a detailed page for each post node.
-  // The path field stems from the original WordPress link
-  // and we use it for the slug to preserve url structure.
-  // The Post ID is prefixed with 'POST_'
-  allWordpressWpPortofolio.edges.forEach(edge => {
+
+  const blogPostListTemplate = path.resolve(`./src/templates/blogPostList.js`)
+
+  const posts = allWordpressPost.edges
+  const postPerPage = 2
+  const numberOfPage = Math.ceil(posts.length / postPerPage)
+
+  Array.from({
+    length: numberOfPage
+  }).forEach((edge, index) => {
     createPage({
-      path: `${edge.node.path}`,
-      component: slash(portofolioTemplate),
+      path: index === 0 ? `/blog` : `/blog/${index + 1}`,
+      component: slash(blogPostListTemplate),
       context: {
-        ...edge.node,
-      },
+        posts: posts.slice(index * postPerPage, (index * postPerPage) + postPerPage),
+        numberOfPage,
+        currentPage: index + 1
+      }
+    })
+  })
+
+  posts.forEach(post => {
+    const { path, ...context } = post.node
+    createPage({
+      path: `/blog${post.node.path}`,
+      component: slash(pageTemplate),
+      context
     })
   })
 }
