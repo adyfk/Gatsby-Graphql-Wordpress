@@ -41,7 +41,7 @@ export default () => {
     <MainMenuInner>
       <Siteinfo />
       {edges[0].node.items.map(item =>
-        <MenuItem to={item.object_slug} key={item.title} >{item.title}</MenuItem>
+        <MenuItem to={'/' + item.object_slug} key={item.title} >{item.title}</MenuItem>
       )}
     </MainMenuInner>
   </MainMenuWrapper>
